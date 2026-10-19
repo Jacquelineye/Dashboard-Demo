@@ -1,0 +1,11 @@
+{
+  "name": "machine-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix machine-ai run dev",
+    "build": "npm --prefix machine-ai run build",
+    "lint": "npm --prefix machine-ai run lint",
+    "preview": "npm --prefix machine-ai run preview"
+  }
+}
+
