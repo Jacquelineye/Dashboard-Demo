@@ -78,10 +78,10 @@ export default function OnboardingTour({
     };
     setSpotlightRect(spot);
 
-    // 取得卡片實際 DOM 測量高度（若尚未掛載則以 210px 估算）
+    // 取得卡片實際 DOM 測量高度（若尚未掛載則以 230px 估算）
     const cardEl = cardRef.current;
-    const popWidth = Math.min(350, window.innerWidth - 32);
-    const popHeight = cardEl ? cardEl.offsetHeight : 210;
+    const popWidth = Math.min(360, window.innerWidth - 32);
+    const popHeight = cardEl ? cardEl.offsetHeight : 230;
 
     let targetLeft = 0;
     let targetTop = 0;
@@ -258,7 +258,7 @@ export default function OnboardingTour({
         />
       )}
 
-      {/* 操作指引彈窗卡片 (完全比照圖二風格：圓角 28px、分隔線、極簡簡短說明) */}
+      {/* 操作指引彈窗卡片 (完全比照圖二風格：圓角 28px、p-28 內距、分隔線、極簡簡短說明) */}
       <div
         ref={cardRef}
         style={{
@@ -268,7 +268,7 @@ export default function OnboardingTour({
           width: `${popoverPos.width}px`,
         }}
         onClick={(e) => e.stopPropagation()}
-        className="z-[99992] flex flex-col rounded-[28px] border border-slate-100/80 bg-white px-26 py-20 shadow-[0_16px_40px_rgba(0,0,0,0.12)] transition-all duration-300 ease-out"
+        className="z-[99992] flex flex-col rounded-[28px] border border-slate-100/80 bg-white p-28 shadow-[0_16px_40px_rgba(0,0,0,0.12)] transition-all duration-300 ease-out"
       >
         {/* 頂部標頭：步驟標籤 (高度 20px) + 關閉叉叉按鈕 (36px * 36px) */}
         <div className="flex items-center justify-between">
