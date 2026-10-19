@@ -49,3 +49,4 @@ npm run build
 - **樣式**：Tailwind CSS (自研 Design System 元件庫)
 - **架構**：Portal 下拉選單、SVG 聚光燈遮罩、動態加權排序演算法
 - **部署**：GitHub Actions + GitHub Pages
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback } from "react";
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../actions/button";
 
@@ -19,9 +19,9 @@ export const TOUR_STEPS = [
     stepBadge: "步驟 2 / 3",
     title: "2. 警示設定",
     description: "點擊齒輪可自訂指標門檻，並自由開啟 OEE、稼動率等監控項目。",
-    placement: "right-center",
+    placement: "right-bottom",
     highlightPadding: 4,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   {
     targetId: "tour-role-select",
@@ -46,8 +46,9 @@ export default function OnboardingTour({
 }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [spotlightRect, setSpotlightRect] = useState(null);
-  const [popoverPos, setPopoverPos] = useState({ top: 100, left: 100, width: 360 });
+  const [popoverPos, setPopoverPos] = useState({ top: 100, left: 100, width: 350 });
 
+  const cardRef = useRef(null);
   const currentStep = steps[currentStepIndex];
 
   // 計算目前步驟目標元素的螢幕位置與彈窗最佳放置位置
@@ -77,16 +78,17 @@ export default function OnboardingTour({
     };
     setSpotlightRect(spot);
 
-    // 彈窗尺寸（寬 360px，高約 210px，比照圖二標準規格）
-    const popWidth = Math.min(360, window.innerWidth - 32);
-    const popHeight = 210;
+    // 取得卡片實際 DOM 測量高度（若尚未掛載則以 210px 估算）
+    const cardEl = cardRef.current;
+    const popWidth = Math.min(350, window.innerWidth - 32);
+    const popHeight = cardEl ? cardEl.offsetHeight : 210;
 
     let targetLeft = 0;
     let targetTop = 0;
 
     switch (currentStep.placement) {
       case "left-top":
-        // 位於目標元素左側，垂直略微偏上（如圖二）
+        // 位於目標元素左側，垂直略微偏上（如步驟 1）
         targetLeft = spot.x - popWidth - 16;
         targetTop = spot.y - 10;
         break;
@@ -95,12 +97,11 @@ export default function OnboardingTour({
         targetTop = spot.y + spot.height + 14;
         break;
       case "right-center":
-        // 置於目標元素右側垂直居中
         targetLeft = spot.x + spot.width + 16;
         targetTop = spot.y + spot.height / 2 - popHeight / 2;
         break;
       case "right-bottom":
-        // 置於目標元素右側偏上方，避免超出螢幕底部
+        // 置於目標元素右側偏上方（卡片底部對齊目標元素底部，確保絕不往螢幕下方溢出）
         targetLeft = spot.x + spot.width + 16;
         targetTop = spot.y + spot.height - popHeight;
         break;
@@ -113,9 +114,10 @@ export default function OnboardingTour({
         targetTop = spot.y + spot.height + 14;
     }
 
-    // 防超出視窗邊界保護 (Safe Viewport Clamp)
-    const safeLeft = Math.max(16, Math.min(window.innerWidth - popWidth - 16, targetLeft));
-    const safeTop = Math.max(16, Math.min(window.innerHeight - popHeight - 16, targetTop));
+    // 嚴格安全間距：卡片四周離螢幕邊緣至少保留 20px，徹底杜絕裁切
+    const margin = 20;
+    const safeLeft = Math.max(margin, Math.min(window.innerWidth - popWidth - margin, targetLeft));
+    const safeTop = Math.max(margin, Math.min(window.innerHeight - popHeight - margin, targetTop));
 
     setPopoverPos({ top: safeTop, left: safeLeft, width: popWidth });
   }, [isOpen, currentStep]);
@@ -258,6 +260,7 @@ export default function OnboardingTour({
 
       {/* 操作指引彈窗卡片 (完全比照圖二風格：圓角 28px、分隔線、極簡簡短說明) */}
       <div
+        ref={cardRef}
         style={{
           position: "fixed",
           top: `${popoverPos.top}px`,
@@ -265,7 +268,7 @@ export default function OnboardingTour({
           width: `${popoverPos.width}px`,
         }}
         onClick={(e) => e.stopPropagation()}
-        className="z-[99992] flex flex-col rounded-[28px] border border-slate-100/80 bg-white p-28 shadow-[0_16px_40px_rgba(0,0,0,0.12)] transition-all duration-300 ease-out"
+        className="z-[99992] flex flex-col rounded-[28px] border border-slate-100/80 bg-white px-26 py-20 shadow-[0_16px_40px_rgba(0,0,0,0.12)] transition-all duration-300 ease-out"
       >
         {/* 頂部標頭：步驟標籤 (高度 20px) + 關閉叉叉按鈕 (36px * 36px) */}
         <div className="flex items-center justify-between">
@@ -277,7 +280,7 @@ export default function OnboardingTour({
             type="button"
             onClick={handleSkip}
             title="關閉指引"
-            className="flex h-[36px] w-[36px] min-h-[36px] min-w-[36px] max-h-[36px] max-w-[36px] items-center justify-center rounded-full text-[#94A3B8] hover:bg-slate-100 hover:text-[#475569] transition-colors cursor-pointer -mr-6 -mt-6"
+            className="flex h-[36px] w-[36px] min-h-[36px] min-w-[36px] max-h-[36px] max-w-[36px] items-center justify-center rounded-full text-[#94A3B8] hover:bg-slate-100 hover:text-[#475569] transition-colors cursor-pointer -mr-6 -mt-4"
           >
             <svg
               viewBox="0 0 24 24"
@@ -290,17 +293,17 @@ export default function OnboardingTour({
         </div>
 
         {/* 標題 (大字體，深黑字色) */}
-        <h3 className="mt-16 mb-10 text-[20px] font-bold text-[#1E293B] tracking-tight leading-snug select-none">
+        <h3 className="mt-12 mb-6 text-[18px] font-bold text-[#1E293B] tracking-tight leading-snug select-none">
           {currentStep.title}
         </h3>
 
         {/* 說明文字 (簡明扼要，兩行以內) */}
-        <p className="text-[14px] leading-relaxed text-[#64748B] select-none">
+        <p className="text-[13.5px] leading-relaxed text-[#64748B] select-none">
           {currentStep.description}
         </p>
 
         {/* 圖片二同款分隔線 */}
-        <div className="h-[1px] w-full bg-[#E5E9EC] my-18" />
+        <div className="h-[1px] w-full bg-[#E5E9EC] my-14" />
 
         {/* 底部導覽列：略過 (左) + 圓點指示器 (中) + 下一步/完成按鈕 (右，使用 Button 元件，高度固定 36px) */}
         <div className="flex h-[36px] items-center justify-between">
